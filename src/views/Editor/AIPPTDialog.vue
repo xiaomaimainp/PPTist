@@ -114,9 +114,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, useTemplateRef } from 'vue'
+import { ref, onMounted, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import api from '@/services'
+
 import useAIPPT from '@/hooks/useAIPPT'
 import type { AIPPTSlide } from '@/types/AIPPT'
 import type { Slide, SlideTheme } from '@/types/slides'
@@ -129,6 +130,16 @@ import Select from '@/components/Select.vue'
 import FullscreenSpin from '@/components/FullscreenSpin.vue'
 import OutlineEditor from '@/components/OutlineEditor.vue'
 
+interface Props {
+  initialKeyword?: string
+  initialOutline?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  initialKeyword: '',
+  initialOutline: ''
+})
+
 const mainStore = useMainStore()
 const slideStore = useSlidesStore()
 const { templates } = storeToRefs(slideStore)
@@ -138,11 +149,28 @@ const language = ref('中文')
 const style = ref('通用')
 const img = ref('')
 const keyword = ref('')
+
+// 监听初始关键词变化
+watch(() => props.initialKeyword, (newKeyword) => {
+  if (newKeyword) {
+    keyword.value = newKeyword
+  }
+}, { immediate: true })
+
 const outline = ref('')
 const selectedTemplate = ref('template_1')
 const loading = ref(false)
 const outlineCreating = ref(false)
 const step = ref<'setup' | 'outline' | 'template'>('setup')
+
+// 监听初始大纲变化
+watch(() => props.initialOutline, (newOutline) => {
+  if (newOutline) {
+    outline.value = newOutline
+    step.value = 'outline'
+    outlineCreating.value = false
+  }
+}, { immediate: true })
 const model = ref('GLM-4.5-Air')
 const outlineRef = useTemplateRef<HTMLElement>('outlineRef')
 const inputRef = useTemplateRef<InstanceType<typeof Input>>('inputRef')

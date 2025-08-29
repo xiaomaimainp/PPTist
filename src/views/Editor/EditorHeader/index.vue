@@ -89,6 +89,9 @@
       <div class="menu-item" v-tooltip="'AI生成PPT'" @click="openAIPPTDialog(); mainMenuVisible = false">
         <span class="text ai">AI</span>
       </div>
+      <div class="menu-item" v-tooltip="'导入文件生成PPT'" @click="openFileImportDialog()">
+        <span class="text">📁</span>
+      </div>
       <div class="menu-item" v-tooltip="'导出'" @click="setDialogForExport('pptx')">
         <IconDownload class="icon" />
       </div>
@@ -107,6 +110,11 @@
     </Drawer>
 
     <FullscreenSpin :loading="exporting" tip="正在导入..." />
+    
+    <FileImportDialog
+      v-model:visible="fileImportDialogVisible"
+      @triggerAIPPT="handleTriggerAIPPT"
+    />
   </div>
 </template>
 
@@ -127,6 +135,11 @@ import Input from '@/components/Input.vue'
 import Popover from '@/components/Popover.vue'
 import PopoverMenuItem from '@/components/PopoverMenuItem.vue'
 import Divider from '@/components/Divider.vue'
+import FileImportDialog from '../FileImportDialog.vue'
+
+const emit = defineEmits<{
+  triggerAIPPT: [content: string]
+}>()
 
 const mainStore = useMainStore()
 const slidesStore = useSlidesStore()
@@ -168,6 +181,16 @@ const openMarkupPanel = () => {
 
 const openAIPPTDialog = () => {
   mainStore.setAIPPTDialogState(true)
+}
+
+const fileImportDialogVisible = ref(false)
+const openFileImportDialog = () => {
+  fileImportDialogVisible.value = true
+}
+
+const handleTriggerAIPPT = (content: string) => {
+  // 触发AIPPT对话框并填充内容
+  emit('triggerAIPPT', content)
 }
 </script>
 

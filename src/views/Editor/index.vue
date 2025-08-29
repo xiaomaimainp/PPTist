@@ -1,6 +1,6 @@
 <template>
   <div class="pptist-editor">
-    <EditorHeader class="layout-header" />
+    <EditorHeader class="layout-header" @triggerAIPPT="handleTriggerAIPPT" />
     <div class="layout-content">
       <Thumbnails class="layout-content-left" />
       <div class="layout-content-center">
@@ -38,8 +38,14 @@
     closeButton
     @closed="closeAIPPTDialog()"
   >
-    <AIPPTDialog />
+    <AIPPTDialog :initialKeyword="aipptKeyword" :initialOutline="aipptOutline" />
   </Modal>
+
+  <FileImportDialog 
+    v-model:visible="fileImportDialogVisible" 
+    @success="handleFileImportSuccess"
+    @triggerAIPPT="handleTriggerAIPPT"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -62,6 +68,7 @@ import NotesPanel from './NotesPanel.vue'
 import SymbolPanel from './SymbolPanel.vue'
 import MarkupPanel from './MarkupPanel.vue'
 import AIPPTDialog from './AIPPTDialog.vue'
+import FileImportDialog from './FileImportDialog.vue'
 import Modal from '@/components/Modal.vue'
 
 const mainStore = useMainStore()
@@ -69,6 +76,31 @@ const { dialogForExport, showSelectPanel, showSearchPanel, showNotesPanel, showS
 
 const closeExportDialog = () => mainStore.setDialogForExport('')
 const closeAIPPTDialog = () => mainStore.setAIPPTDialogState(false)
+
+const fileImportDialogVisible = ref(false)
+const handleFileImportSuccess = (data: any) => {
+  console.log('文件导入成功:', data)
+  // 处理文件导入成功后的逻辑
+}
+
+// 处理文件导入触发AIPPT的逻辑
+const aipptKeyword = ref('')
+const aipptOutline = ref('')
+const handleTriggerAIPPT = (content: string) => {
+  // 判断内容是否为大纲格式（包含markdown标题）
+  if (content.includes('# ') || content.includes('## ')) {
+    // 如果是大纲内容，直接设置大纲
+    aipptOutline.value = content
+    aipptKeyword.value = ''
+  }
+  else {
+    // 如果是关键词，设置关键词
+    aipptKeyword.value = content
+    aipptOutline.value = ''
+  }
+  // 打开AIPPT对话框
+  mainStore.setAIPPTDialogState(true)
+}
 
 const remarkHeight = ref(40)
 
